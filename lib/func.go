@@ -32,11 +32,6 @@ func (f *Func) String() string {
 	return str
 }
 
-func scan(s *scanner.Scanner) (token.Token, string) {
-	_, tok, lit := s.Scan()
-	return tok, lit
-}
-
 func (f *Func) scanFunc(tok token.Token, lit string, s *scanner.Scanner) bool {
 	if tok != token.FUNC {
 		return false

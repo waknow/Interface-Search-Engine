@@ -24,3 +24,8 @@ func (v *Values) IsEqual(value Values) (res bool) {
 	}
 	return
 }
+
+func scan(s *scanner.Scanner) (token.Token, string) {
+	_, tok, lit := s.Scan()
+	return tok, lit
+}

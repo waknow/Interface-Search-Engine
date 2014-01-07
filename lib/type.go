@@ -6,6 +6,13 @@ import (
 	"go/token"
 )
 
+type Interface struct {
+	Name   string
+	Method Func
+}
+
+type Interfaces []Interface
+
 type Struct struct {
 	Name string
 }
