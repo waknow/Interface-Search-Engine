@@ -8,9 +8,10 @@ import (
 
 type Tokens struct {
 	Funcations Funcs
+	Types      Type
 }
 
-func Scan(path string) (res Tokens) {
+func (t *Tokens) Scan(path string) (res Tokens) {
 
 	var s scanner.Scanner
 	fset := token.NewFileSet()
@@ -23,8 +24,10 @@ func Scan(path string) (res Tokens) {
 			break
 		}
 		if tok == token.FUNC {
-			funcation := t.Funcations.Scan(tok, lit, s)
-			fmt.Println(funcation.String())
+			t.Funcations.Scan(tok, lit, s)
+		}
+		if tok == token.TYPE {
+			t.Types.Scan(tok, lit, s)
 		}
 	}
 	return

@@ -19,12 +19,15 @@ type Func struct {
 
 type Funcs []Func
 
-func (f *Funcs) Scan(tok token.Token, lit string, s *scanner.Scanner) {
+func (f *Funcs) Scan(tok token.Token, lit string, s *scanner.Scanner) bool {
 	funcation := Func{}
 
 	if funcation.scanFunc(tok, lit, s) {
 		f = append(f, funcation)
+		return true
 	}
+
+	return false
 }
 
 func (f *Func) String() string {
@@ -38,12 +41,10 @@ func (f *Func) scanFunc(tok token.Token, lit string, s *scanner.Scanner) bool {
 	}
 
 	tok, lit = scan(s)
-	if tok != token.LPAREN {
-		return false
+	if tok == token.LPAREN {
+		f.scanReceiver(tok, lit, s)
+		tok, lit = scan(s)
 	}
-	f.Receiver = scanReceiver(tok, lit, s)
-
-	tok, lit = scan(s)
 	if tok != token.IDENT {
 		return false
 	}
@@ -53,10 +54,10 @@ func (f *Func) scanFunc(tok token.Token, lit string, s *scanner.Scanner) bool {
 	if tok != token.LPAREN {
 		return false
 	}
-	f.Values = scanValues(tok, lit, s)
+	f.scanValues(tok, lit, s)
 
 	tok, lit = scan(s)
-	f.Retruns = scanReturn(tok, lit, s)
+	f.scanReturn(tok, lit, s)
 
 	return true
 }
@@ -68,7 +69,9 @@ const (
 	VALUE_END
 )
 
-func scanReceiver(tok token.Token, lit string, s *scanner.Scanner) (value Value) {
+func (f *Func) scanReceiver(tok token.Token, lit string, s *scanner.Scanner) {
+	value := Value{}
+
 	if tok != token.LPAREN {
 		return
 	}
@@ -88,12 +91,13 @@ func scanReceiver(tok token.Token, lit string, s *scanner.Scanner) (value Value)
 
 	tok, lit = scan(s)
 	value.Type += lit
-	scan(s)
-	return
+
+	f.Receiver = append(f.Receiver, value)
 }
 
-func scanValues(tok token.Token, lit string, s *scanner.Scanner) (values []Value) {
+func (f *Func) scanValues(tok token.Token, lit string, s *scanner.Scanner) {
 	// fmt.Println("--->scan values")
+	values := Values
 	state := VALUE_START
 	var value Value
 	for {
@@ -153,10 +157,12 @@ func scanValues(tok token.Token, lit string, s *scanner.Scanner) (values []Value
 		}
 	}
 	// fmt.Println("-------------", tok)
+	f.Values = append(f.Values, values...)
 	return
 }
 
-func scanReturn(tok token.Token, lit string, s *scanner.Scanner) (values []Value) {
+func (f *Func) scanReturn(tok token.Token, lit string, s *scanner.Scanner) {
+	var values Values
 	// fmt.Println("--->scan return")
 	if tok == token.LPAREN {
 		values = scanValues(tok, lit, s)
@@ -168,5 +174,6 @@ func scanReturn(tok token.Token, lit string, s *scanner.Scanner) (values []Value
 		scan(s)
 	}
 
+	f.Retruns = append(f.Retruns, values...)
 	return
 }

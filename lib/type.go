@@ -1,14 +1,15 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"go/scanner"
 	"go/token"
 )
 
 type Interface struct {
-	Name   string
-	Method Func
+	Name    string
+	Methods Funcs
 }
 
 type Interfaces []Interface
@@ -19,23 +20,72 @@ type Struct struct {
 
 type Structs []Struct
 
-func (ss *Structs) Scan(tok token.Token, lit string, s *scanner.Scanner) {
-	st := Struct{}
-	if st.scanStruct(tok, lit, s) {
-		ss = append(ss, st)
-	}
+type Type struct {
+	Interfaces Interfaces
+	Structs    Structs
 }
 
-func (st *Struct) scanStruct(tok token.Token, lit string, s *scanner.Scanner) bool {
+func (t *Type) GetStructs() Structs {
+	return t.Structs
+}
+
+func (t *Type) GetInterfaces() Interfaces {
+	return t.Interfaces
+}
+
+func (t *Type) Scan(tok token.Token, lit string, s *scanner.Scanner) {
 	if tok != token.TYPE {
-		return false
+		fmt.Println("is not the type")
+		return
 	}
 
 	_, tok, lit = s.Scan()
 	if tok != token.IDENT {
-		return false
+		fmt.Println("error")
+		return
 	}
-	st.Name = lit
+	name := lit
 
-	return true
+	_, tok, lit = s.Scan()
+	switch tok {
+	case token.INTERFACE:
+		t.Interfaces.scan(tok, name, s)
+	case token.STRUCT:
+		st := Struct{name}
+		t.Structs = append(t.Structs, st)
+	default:
+		fmt.Println("error")
+		return
+	}
+}
+
+const (
+	INTERFACE_START = iota
+	INTERFACE_METHOD
+	INTERFACE_END
+)
+
+func (i *Interfaces) scan(tok token.Token, name string, s *scanner.Scanner) error {
+	inter := Interface{Name: name}
+
+	state := INTERFACE_START
+	for {
+		switch state {
+		case INTERFACE_START:
+			if tok == token.LBRACE || tok == token.SEMICOLON {
+				state = INTERFACE_METHOD
+			}
+			if tok == token.RBRACE {
+				state = INTERFACE_END
+			}
+			_, tok, lit := s.Scan()
+		case INTERFACE_METHOD:
+			inter.Methods.Scan(tok, lit, s)
+			state = INTERFACE_START
+		}
+
+		if state == INTERFACE_END {
+			break
+		}
+	}
 }
