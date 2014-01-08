@@ -1,5 +1,3 @@
-//basic data type
-
 package lib
 
 type Value struct {
@@ -13,19 +11,14 @@ func (v *Value) IsEqual(value Value) bool {
 
 type Values []Value
 
-func (v *Values) IsEqual(value Values) (res bool) {
-	res = len(v) == len(value)
-	if !res {
+func (v *Values) IsEqual(values Values) (equal bool) {
+	equal = len(*v) == len(values)
+	if !equal {
 		return
 	}
 
-	for index, val := range v {
-		res &= val.IsEqual(val[index])
+	for index, val := range *v {
+		equal = equal && val.IsEqual(values[index])
 	}
 	return
-}
-
-func scan(s *scanner.Scanner) (token.Token, string) {
-	_, tok, lit := s.Scan()
-	return tok, lit
 }

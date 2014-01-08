@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"go/scanner"
 	"go/token"
-	"io/ioutil"
-	"os"
 )
 
 type Func struct {
@@ -23,7 +21,7 @@ func (f *Funcs) Scan(tok token.Token, lit string, s *scanner.Scanner) bool {
 	funcation := Func{}
 
 	if funcation.scanFunc(tok, lit, s) {
-		f = append(f, funcation)
+		*f = append(*f, funcation)
 		return true
 	}
 
@@ -54,7 +52,7 @@ func (f *Func) scanFunc(tok token.Token, lit string, s *scanner.Scanner) bool {
 	if tok != token.LPAREN {
 		return false
 	}
-	f.scanValues(tok, lit, s)
+	f.Values = append(f.Values, scanValues(tok, lit, s)...)
 
 	tok, lit = scan(s)
 	f.scanReturn(tok, lit, s)
@@ -92,14 +90,13 @@ func (f *Func) scanReceiver(tok token.Token, lit string, s *scanner.Scanner) {
 	tok, lit = scan(s)
 	value.Type += lit
 
-	f.Receiver = append(f.Receiver, value)
+	f.Receiver = value
 }
 
-func (f *Func) scanValues(tok token.Token, lit string, s *scanner.Scanner) {
+func scanValues(tok token.Token, lit string, s *scanner.Scanner) (values Values) {
 	// fmt.Println("--->scan values")
-	values := Values
-	state := VALUE_START
 	var value Value
+	state := VALUE_START
 	for {
 		// fmt.Printf("\n%v \t%s \t%q\n", state, tok, lit)
 
@@ -157,7 +154,6 @@ func (f *Func) scanValues(tok token.Token, lit string, s *scanner.Scanner) {
 		}
 	}
 	// fmt.Println("-------------", tok)
-	f.Values = append(f.Values, values...)
 	return
 }
 
@@ -176,4 +172,9 @@ func (f *Func) scanReturn(tok token.Token, lit string, s *scanner.Scanner) {
 
 	f.Retruns = append(f.Retruns, values...)
 	return
+}
+
+func scan(s *scanner.Scanner) (token.Token, string) {
+	_, tok, lit := s.Scan()
+	return tok, lit
 }

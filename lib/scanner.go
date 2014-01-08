@@ -1,9 +1,11 @@
 package lib
 
 import (
-	"fmt"
+	// "fmt"
 	"go/scanner"
 	"go/token"
+	"io/ioutil"
+	"os"
 )
 
 type Tokens struct {
@@ -11,8 +13,15 @@ type Tokens struct {
 	Types      Type
 }
 
-func (t *Tokens) Scan(path string) (res Tokens) {
-
+func (t *Tokens) Scan(path string) (err error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return
+	}
+	src, err := ioutil.ReadAll(f)
+	if err != nil {
+		return
+	}
 	var s scanner.Scanner
 	fset := token.NewFileSet()
 	file := fset.AddFile("", fset.Base(), len(src))
@@ -24,10 +33,10 @@ func (t *Tokens) Scan(path string) (res Tokens) {
 			break
 		}
 		if tok == token.FUNC {
-			t.Funcations.Scan(tok, lit, s)
+			t.Funcations.Scan(tok, lit, &s)
 		}
 		if tok == token.TYPE {
-			t.Types.Scan(tok, lit, s)
+			t.Types.Scan(tok, lit, &s)
 		}
 	}
 	return

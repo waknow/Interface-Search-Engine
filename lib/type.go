@@ -1,7 +1,7 @@
 package lib
 
 import (
-	"errors"
+	// "errors"
 	"fmt"
 	"go/scanner"
 	"go/token"
@@ -14,11 +14,36 @@ type Interface struct {
 
 type Interfaces []Interface
 
+func (i *Interface) String() string {
+	return fmt.Sprintf("interface:\nName:%s\nMethods:%v\n", i.Name, i.Methods)
+}
+
+func (i *Interfaces) String() string {
+	var str string
+	for _, v := range *i {
+		str += v.String()
+	}
+	return str
+}
+
 type Struct struct {
 	Name string
 }
 
 type Structs []Struct
+
+func (s *Struct) String() string {
+	return fmt.Sprintf("struct:\nName:%s\n", s.Name)
+}
+
+func (s *Structs) String() string {
+	var str string
+	for _, v := range *s {
+		str += v.String()
+	}
+
+	return str
+}
 
 type Type struct {
 	Interfaces Interfaces
@@ -65,9 +90,9 @@ const (
 	INTERFACE_END
 )
 
-func (i *Interfaces) scan(tok token.Token, name string, s *scanner.Scanner) error {
+func (i *Interfaces) scan(tok token.Token, name string, s *scanner.Scanner) {
 	inter := Interface{Name: name}
-
+	var lit string
 	state := INTERFACE_START
 	for {
 		switch state {
@@ -78,7 +103,7 @@ func (i *Interfaces) scan(tok token.Token, name string, s *scanner.Scanner) erro
 			if tok == token.RBRACE {
 				state = INTERFACE_END
 			}
-			_, tok, lit := s.Scan()
+			_, tok, lit = s.Scan()
 		case INTERFACE_METHOD:
 			inter.Methods.Scan(tok, lit, s)
 			state = INTERFACE_START
