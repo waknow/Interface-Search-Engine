@@ -6,8 +6,8 @@ import (
 
 type S1 struct{}
 
-func (s *S1) name(t, b int) bool {
-	return
+type Interfacer interface {
+	read(b string, i, j, k int) string
 }
 
 func (s *S1) read(b string, i, j, k int) string {

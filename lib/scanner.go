@@ -1,7 +1,7 @@
 package lib
 
 import (
-	// "fmt"
+	"fmt"
 	"go/scanner"
 	"go/token"
 	"io/ioutil"
@@ -33,9 +33,12 @@ func (t *Tokens) Scan(path string) (err error) {
 			break
 		}
 		if tok == token.FUNC {
+			fmt.Println("scan funcation...")
+			_, tok, lit = s.Scan()
 			t.Funcations.Scan(tok, lit, &s)
 		}
 		if tok == token.TYPE {
+			fmt.Println("scan types...")
 			t.Types.Scan(tok, lit, &s)
 		}
 	}

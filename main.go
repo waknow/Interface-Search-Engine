@@ -3,35 +3,20 @@ package main
 import (
 	"fmt"
 
-	"io/ioutil"
-	"os"
-
 	"interface/lib"
 )
 
 func main() {
-	f, err := os.Open("lib/test.go")
+	path := "test.go"
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	fmt.Println("scan start")
+	var tokens lib.Tokens
+	tokens.Scan(path)
 
-	src, _ := ioutil.ReadAll(f)
-
-	var s scanner.Scanner
-	fset := token.NewFileSet()
-	file := fset.AddFile("", fset.Base(), len(src))
-	s.Init(file, src, nil, scanner.ScanComments)
-
-	for {
-		_, tok, lit := s.Scan()
-		if tok == token.EOF {
-			break
-		}
-		if tok == token.FUNC {
-			funcation := ScanFunc(tok, lit, &s)
-			fmt.Println(funcation.String())
-		}
-	}
+	interfaces := tokens.Types.GetInterfaces()
+	structs := tokens.Types.GetStructs()
+	funcations := tokens.Funcations
+	fmt.Println("interface\n", interfaces.String())
+	fmt.Println("struct\n", structs.String())
+	fmt.Println("func\n", funcations.String())
 }

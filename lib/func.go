@@ -20,7 +20,8 @@ type Funcs []Func
 func (f *Funcs) Scan(tok token.Token, lit string, s *scanner.Scanner) bool {
 	funcation := Func{}
 
-	if funcation.scanFunc(tok, lit, s) {
+	if funcation.scan(tok, lit, s) {
+		// fmt.Println("Func.Scan:got", funcation.String())
 		*f = append(*f, funcation)
 		return true
 	}
@@ -28,35 +29,45 @@ func (f *Funcs) Scan(tok token.Token, lit string, s *scanner.Scanner) bool {
 	return false
 }
 
-func (f *Func) String() string {
-	str := fmt.Sprintf("\nrececiver:%v\nname:%s\nvalues:%v\nreturn:%v", f.Receiver, f.Name, f.Values, f.Retruns)
+func (f *Funcs) String() string {
+	var str string
+	for _, funcation := range *f {
+		str += funcation.String()
+	}
 	return str
 }
 
-func (f *Func) scanFunc(tok token.Token, lit string, s *scanner.Scanner) bool {
-	if tok != token.FUNC {
-		return false
-	}
+func (f *Func) String() string {
+	str := fmt.Sprintf("func:\n\trececiver:%v\n\tname:%s\n\tvalues:%v\n\treturn:%v", f.Receiver, f.Name, f.Values, f.Retruns)
+	return str
+}
 
-	tok, lit = scan(s)
+func (f *Func) scan(tok token.Token, lit string, s *scanner.Scanner) bool {
+	// if tok != token.FUNC {
+	// 	fmt.Println("Func.scan:not a func")
+	// 	return false
+	// }
+
+	// tok, lit = scan(s)
 	if tok == token.LPAREN {
 		f.scanReceiver(tok, lit, s)
 		tok, lit = scan(s)
 	}
 	if tok != token.IDENT {
+		fmt.Println("Func.scan:not a name")
 		return false
 	}
 	f.Name = lit
 
 	tok, lit = scan(s)
 	if tok != token.LPAREN {
+		fmt.Println("Func.scan:not a '('")
 		return false
 	}
 	f.Values = append(f.Values, scanValues(tok, lit, s)...)
 
 	tok, lit = scan(s)
 	f.scanReturn(tok, lit, s)
-
 	return true
 }
 
@@ -71,17 +82,20 @@ func (f *Func) scanReceiver(tok token.Token, lit string, s *scanner.Scanner) {
 	value := Value{}
 
 	if tok != token.LPAREN {
+		fmt.Println("Func.scanReceiver:not the '('")
 		return
 	}
 
 	tok, lit = scan(s)
 	if tok != token.IDENT {
+		fmt.Println("Func.scanReceiver:is not the name")
 		return
 	}
 	value.Name = lit
 
 	tok, lit = scan(s)
 	if tok != token.MUL {
+		fmt.Println("Func.scanReceiver:not the '*'")
 		value.Type = lit
 		return
 	}
@@ -91,6 +105,7 @@ func (f *Func) scanReceiver(tok token.Token, lit string, s *scanner.Scanner) {
 	value.Type += lit
 
 	f.Receiver = value
+	tok, lit = scan(s)
 }
 
 func scanValues(tok token.Token, lit string, s *scanner.Scanner) (values Values) {

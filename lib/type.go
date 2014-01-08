@@ -15,7 +15,7 @@ type Interface struct {
 type Interfaces []Interface
 
 func (i *Interface) String() string {
-	return fmt.Sprintf("interface:\nName:%s\nMethods:%v\n", i.Name, i.Methods)
+	return fmt.Sprintf("interface:\n\tName:%s\n\tMethods:%v\n", i.Name, i.Methods.String())
 }
 
 func (i *Interfaces) String() string {
@@ -33,7 +33,7 @@ type Struct struct {
 type Structs []Struct
 
 func (s *Struct) String() string {
-	return fmt.Sprintf("struct:\nName:%s\n", s.Name)
+	return fmt.Sprintf("struct:\n\tName:%s\n", s.Name)
 }
 
 func (s *Structs) String() string {
@@ -74,8 +74,10 @@ func (t *Type) Scan(tok token.Token, lit string, s *scanner.Scanner) {
 	_, tok, lit = s.Scan()
 	switch tok {
 	case token.INTERFACE:
+		fmt.Println("scan interfaces...")
 		t.Interfaces.scan(tok, name, s)
 	case token.STRUCT:
+		fmt.Println("scan structs...")
 		st := Struct{name}
 		t.Structs = append(t.Structs, st)
 	default:
@@ -105,6 +107,7 @@ func (i *Interfaces) scan(tok token.Token, name string, s *scanner.Scanner) {
 			}
 			_, tok, lit = s.Scan()
 		case INTERFACE_METHOD:
+			// fmt.Println("Interface.scan:token", tok.String(), lit)
 			inter.Methods.Scan(tok, lit, s)
 			state = INTERFACE_START
 		}
@@ -113,4 +116,7 @@ func (i *Interfaces) scan(tok token.Token, name string, s *scanner.Scanner) {
 			break
 		}
 	}
+
+	*i = append(*i, inter)
+	// fmt.Println("get interface", inter.String())
 }
